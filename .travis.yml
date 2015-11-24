@@ -101,13 +101,7 @@ script:
   - echo 'Running Tests..' && make posix_sitl_simple test
   - echo 'Building UAVCAN node firmware..' && git clone https://github.com/thiemar/vectorcontrol
   - cd vectorcontrol
-  - BOARD=s2740vc_1_0 make
-#Workaround Build order is contaminating second board built
-  - mv firmware firmware.s2740vc_1_0
-  - make clean
-  - BOARD=px4esc_1_6 make
-  - cp firmware.s2740vc_1_0/* firmware
-  - rm -fr firmware.s2740vc_1_0
+  - BOARD=s2740vc_1_0 make && BOARD=px4esc_1_6 make
   - ../Tools/uavcan_copy.sh
   - cd ..
   - echo 'Building NuttX px4fmu-v1 Firmware..' && make px4fmu-v1_default

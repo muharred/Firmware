@@ -1943,12 +1943,45 @@ PX4IO::io_publish_pwm_outputs()
 
 	/* get mixer status flags from IO */
 	uint16_t mixer_status;
+	uint16_t mixer_tmp;
+
 	ret = io_reg_get(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_MIXER, &mixer_status, sizeof(mixer_status) / sizeof(uint16_t));
-	memcpy(&motor_limits, &mixer_status, sizeof(motor_limits));
+	motor_limits.lower_limit = (mixer_status & PX4IO_P_STATUS_MIXER_LOWER_LIMIT) ? 1 : 0;
+	motor_limits.upper_limit = (mixer_status & PX4IO_P_STATUS_MIXER_UPPER_LIMIT) ? 1 : 0;
+	motor_limits.yaw_limit = (mixer_status & PX4IO_P_STATUS_MIXER_YAW_LIMIT) ? 1 : 0;
 
 	if (ret != OK) {
 		return ret;
 	}
+
+	ret = io_reg_get(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_BOOST, &mixer_tmp, 1);
+	motor_limits.thrust_boost = REG_TO_FLOAT(mixer_tmp);
+
+	if (ret != OK) {
+		return ret;
+	}
+
+	ret = io_reg_get(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ROLL_PITCH_SCALE, &mixer_tmp, 1);
+	motor_limits.roll_pitch_scale = REG_TO_FLOAT(mixer_tmp);
+
+	if (ret != OK) {
+		return ret;
+	}
+
+	ret = io_reg_get(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_YAW_REDUCTION, &mixer_tmp, 1);
+	motor_limits.yaw_reduction = REG_TO_FLOAT(mixer_tmp);
+
+	if (ret != OK) {
+		return ret;
+	}
+
+	ret = io_reg_get(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_THRUST_REDUCTION, &mixer_tmp, 1);
+	motor_limits.thrust_reduction = REG_TO_FLOAT(mixer_tmp);
+
+	if (ret != OK) {
+		return ret;
+	}
+
 
 	/* publish mixer status */
 	if (_to_mixer_status == nullptr) {

@@ -131,8 +131,6 @@
 #include <px4_config.h>
 #include "drivers/drv_mixer.h"
 
-#include <uORB/topics/multirotor_motor_limits.h>
-
 #include "mixer_load.h"
 
 /**
@@ -174,7 +172,7 @@ public:
 	 * @param space			The number of available entries in the output array;
 	 * @return			The number of entries in the output array that were populated.
 	 */
-	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg) = 0;
+	virtual unsigned		mix(float *outputs, unsigned space, uint16_t status_page[]) = 0;
 
 	/**
 	 * Analyses the mix configuration and updates a bitmask of groups
@@ -250,7 +248,7 @@ public:
 	MixerGroup(ControlCallback control_cb, uintptr_t cb_handle);
 	~MixerGroup();
 
-	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg);
+	virtual unsigned		mix(float *outputs, unsigned space, uint16_t status_page[]);
 	virtual void			groups_required(uint32_t &groups);
 
 	/**
@@ -346,7 +344,7 @@ public:
 	 */
 	static NullMixer		*from_text(const char *buf, unsigned &buflen);
 
-	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg);
+	virtual unsigned		mix(float *outputs, unsigned space, uint16_t status_page[]);
 	virtual void			groups_required(uint32_t &groups);
 };
 
@@ -411,7 +409,7 @@ public:
 			uint16_t mid,
 			uint16_t max);
 
-	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg);
+	virtual unsigned		mix(float *outputs, unsigned space, uint16_t status_page[]);
 	virtual void			groups_required(uint32_t &groups);
 
 	/**
@@ -515,7 +513,7 @@ public:
 			const char *buf,
 			unsigned &buflen);
 
-	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg);
+	virtual unsigned		mix(float *outputs, unsigned space, uint16_t status_page[]);
 	virtual void			groups_required(uint32_t &groups);
 
 private:
@@ -523,9 +521,6 @@ private:
 	float				_pitch_scale;
 	float				_yaw_scale;
 	float				_idle_speed;
-
-	orb_advert_t			_limits_pub;
-	multirotor_motor_limits_s 	_limits;
 
 	unsigned			_rotor_count;
 	const Rotor			*_rotors;

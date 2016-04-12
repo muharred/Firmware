@@ -89,7 +89,6 @@ MultirotorMixer::MultirotorMixer(ControlCallback control_cb,
 	_pitch_scale(pitch_scale),
 	_yaw_scale(yaw_scale),
 	_idle_speed(-1.0f + idle_speed * 2.0f),	/* shift to output range here to avoid runtime calculation */
-	_limits_pub(),
 	_rotor_count(_config_rotor_count[(MultirotorGeometryUnderlyingType)geometry]),
 	_rotors(_config_index[(MultirotorGeometryUnderlyingType)geometry])
 {
@@ -210,7 +209,7 @@ MultirotorMixer::from_text(Mixer::ControlCallback control_cb, uintptr_t cb_handl
 }
 
 unsigned
-MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
+MultirotorMixer::mix(float *outputs, unsigned space, uint16_t status_page[])
 {
 	/* Summary of mixing strategy:
 	1) mix roll, pitch and thrust without yaw.
@@ -230,9 +229,13 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 	float		min_out = 1.0f;
 	float		max_out = 0.0f;
 
+	// Save initial yaw and thrust for report, as the mixer modifies yaw and thrust directly
+	float original_yaw = yaw;
+	float original_thrust = thrust;
+
 	// clean register for saturation status flags
-	if (status_reg != NULL) {
-		(*status_reg) = 0;
+	if (status_page != NULL) {
+		status_page[PX4IO_P_STATUS_MIXER] = 0;
 	}
 
 	// thrust boost parameters
@@ -302,14 +305,14 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 
 	// notify if saturation has occurred
 	if (min_out < 0.0f) {
-		if (status_reg != NULL) {
-			(*status_reg) |= PX4IO_P_STATUS_MIXER_LOWER_LIMIT;
+		if (status_page != NULL) {
+			status_page[PX4IO_P_STATUS_MIXER] |= PX4IO_P_STATUS_MIXER_LOWER_LIMIT;
 		}
 	}
 
 	if (max_out > 1.0f) {
-		if (status_reg != NULL) {
-			(*status_reg) |= PX4IO_P_STATUS_MIXER_UPPER_LIMIT;
+		if (status_page != NULL) {
+			status_page[PX4IO_P_STATUS_MIXER] |= PX4IO_P_STATUS_MIXER_UPPER_LIMIT;
 		}
 	}
 
@@ -332,8 +335,8 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 					roll_pitch_scale + thrust + boost) / _rotors[i].yaw_scale;
 			}
 
-			if (status_reg != NULL) {
-				(*status_reg) |= PX4IO_P_STATUS_MIXER_YAW_LIMIT;
+			if (status_page != NULL) {
+				status_page[PX4IO_P_STATUS_MIXER] |= PX4IO_P_STATUS_MIXER_YAW_LIMIT;
 			}
 
 		} else if (out > 1.0f) {
@@ -349,8 +352,8 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 					       roll_pitch_scale + thrust + boost)) / _rotors[i].yaw_scale;
 			}
 
-			if (status_reg != NULL) {
-				(*status_reg) |= PX4IO_P_STATUS_MIXER_YAW_LIMIT;
+			if (status_page != NULL) {
+				status_page[PX4IO_P_STATUS_MIXER] |= PX4IO_P_STATUS_MIXER_YAW_LIMIT;
 			}
 		}
 	}
@@ -363,6 +366,13 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 			     thrust + boost;
 
 		outputs[i] = constrain(_idle_speed + (outputs[i] * (1.0f - _idle_speed)), _idle_speed, 1.0f);
+	}
+
+	if (status_page != NULL) {
+		status_page[PX4IO_P_STATUS_BOOST] = FLOAT_TO_REG(boost);
+		status_page[PX4IO_P_STATUS_ROLL_PITCH_SCALE] = FLOAT_TO_REG(roll_pitch_scale);
+		status_page[PX4IO_P_STATUS_YAW_REDUCTION] = FLOAT_TO_REG(yaw - original_yaw);
+		status_page[PX4IO_P_STATUS_THRUST_REDUCTION] = FLOAT_TO_REG(thrust - original_thrust);
 	}
 
 	return _rotor_count;

@@ -112,6 +112,7 @@
 #include <uORB/topics/vehicle_land_detected.h>
 #include <uORB/topics/commander_state.h>
 #include <uORB/topics/cpuload.h>
+#include <uORB/topics/multirotor_motor_limits.h>
 
 #include <systemlib/systemlib.h>
 #include <systemlib/param/param.h>
@@ -1194,6 +1195,7 @@ int sdlog2_thread_main(int argc, char *argv[])
 		struct vehicle_land_detected_s land_detected;
 		struct cpuload_s cpuload;
 		struct vehicle_gps_position_s dual_gps_pos;
+		struct multirotor_motor_limits_s multirotor_motor_limits;
 	} buf;
 
 	memset(&buf, 0, sizeof(buf));
@@ -1255,6 +1257,7 @@ int sdlog2_thread_main(int argc, char *argv[])
 			struct log_LAND_s log_LAND;
 			struct log_RPL6_s log_RPL6;
 			struct log_LOAD_s log_LOAD;
+			struct log_MLIM_s log_MLIM;
 		} body;
 	} log_msg = {
 		LOG_PACKET_HEADER_INIT(0)
@@ -1305,6 +1308,7 @@ int sdlog2_thread_main(int argc, char *argv[])
 		int land_detected_sub;
 		int commander_state_sub;
 		int cpuload_sub;
+		int multirotor_motor_limits_sub;
 	} subs;
 
 	subs.cmd_sub = -1;
@@ -1348,6 +1352,7 @@ int sdlog2_thread_main(int argc, char *argv[])
 	subs.land_detected_sub = -1;
 	subs.commander_state_sub = -1;
 	subs.cpuload_sub = -1;
+	subs.multirotor_motor_limits_sub = -1;
 
 	/* add new topics HERE */
 
@@ -2244,6 +2249,19 @@ int sdlog2_thread_main(int argc, char *argv[])
 				log_msg.body.log_CTS.pitch_rate = buf.ctrl_state.pitch_rate;
 				log_msg.body.log_CTS.yaw_rate = buf.ctrl_state.yaw_rate;
 				LOGBUFFER_WRITE_AND_COUNT(CTS);
+			}
+
+			if (copy_if_updated(ORB_ID(multirotor_motor_limits), &subs.multirotor_motor_limits_sub, &buf.multirotor_motor_limits)) {
+				log_msg.msg_type = LOG_MLIM_MSG;
+				log_msg.body.log_MLIM.boost = buf.multirotor_motor_limits.thrust_boost;
+				log_msg.body.log_MLIM.roll_pitch_scale = buf.multirotor_motor_limits.roll_pitch_scale;
+				log_msg.body.log_MLIM.yaw_reduction = buf.multirotor_motor_limits.yaw_reduction;
+				log_msg.body.log_MLIM.thrust_reduction = buf.multirotor_motor_limits.thrust_reduction;
+
+				log_msg.body.log_MLIM.flags = (buf.multirotor_motor_limits.lower_limit << 0)
+						| (buf.multirotor_motor_limits.upper_limit << 1)
+						| (buf.multirotor_motor_limits.yaw_limit << 2);
+				LOGBUFFER_WRITE_AND_COUNT(MLIM);
 			}
 		}
 

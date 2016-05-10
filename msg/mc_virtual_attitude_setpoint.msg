@@ -25,6 +25,9 @@ float32[4] q_e					# Attitude error in quaternion
 bool q_e_valid					# Set to true if quaternion error vector is valid
 
 float32 thrust					# Thrust in Newton the power system should generate
+float32[3] raw_thrust_sp		# Thrust setpoint before any limiting, etc
+float32 thrust_min				# Minimum allowed thrust - used in thrust setpoint limiting
+float32 tilt_max 				# Maximum allowed tilt angle - used in thrust setpoint limiting
 
 bool roll_reset_integral			# Reset roll integral part (navigation logic change)
 bool pitch_reset_integral			# Reset pitch integral part (navigation logic change)

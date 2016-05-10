@@ -1678,6 +1678,11 @@ MulticopterPositionControl::task_main()
 					float thrust_abs = thrust_sp.length();
 					float tilt_max = _params.tilt_max_air;
 					float thr_max = _params.thr_max;
+
+					_att_sp.thrust_min = thr_min;
+					_att_sp.tilt_max = tilt_max;
+					memcpy(&_att_sp.raw_thrust_sp[0], thrust_sp.data, sizeof(_att_sp.raw_thrust_sp));
+
 					/* filter vel_z over 1/8sec */
 					_vel_z_lp = _vel_z_lp * (1.0f - dt * 8.0f) + dt * 8.0f * _vel(2);
 					/* filter vel_z change over 1/8sec */

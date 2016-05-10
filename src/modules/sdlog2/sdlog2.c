@@ -1826,6 +1826,11 @@ int sdlog2_thread_main(int argc, char *argv[])
 				log_msg.body.log_ATSP.q_x = buf.att_sp.q_d[1];
 				log_msg.body.log_ATSP.q_y = buf.att_sp.q_d[2];
 				log_msg.body.log_ATSP.q_z = buf.att_sp.q_d[3];
+				log_msg.body.log_ATSP.thrust_x = buf.att_sp.raw_thrust_sp[0];
+				log_msg.body.log_ATSP.thrust_y = buf.att_sp.raw_thrust_sp[1];
+				log_msg.body.log_ATSP.thrust_z = buf.att_sp.raw_thrust_sp[2];
+				log_msg.body.log_ATSP.thrust_min = buf.att_sp.thrust_min;
+				log_msg.body.log_ATSP.tilt_max = buf.att_sp.tilt_max;
 				LOGBUFFER_WRITE_AND_COUNT(ATSP);
 			}
 

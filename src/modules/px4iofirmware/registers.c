@@ -97,6 +97,8 @@ uint16_t		r_page_status[] = {
 	[PX4IO_P_STATUS_ROLL_PITCH_SCALE] = 0,
 	[PX4IO_P_STATUS_YAW_REDUCTION]	= 0,
 	[PX4IO_P_STATUS_THRUST_REDUCTION] = 0,
+	[PX4IO_P_STATUS_FP_OUT] = 0, 0, 0, 0, // unbounded motor outputs after the first mixer pass
+	[PX4IO_P_STATUS_SP_OUT] = 0, 0, 0, 0, // unbounded motor outputs after the second mixer pass
 };
 
 /**

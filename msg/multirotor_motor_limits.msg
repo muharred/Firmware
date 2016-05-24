@@ -5,3 +5,5 @@ float32 thrust_boost # boost to thrust added by the first mixer pass
 float32 roll_pitch_scale # roll and pitch scaling modifier calculated by the first mixer pass
 float32 yaw_reduction # total yaw reduction calculated by the second mixer pass
 float32 thrust_reduction # total thrust reduction calculated by the second mixer pass
+float32[4] motor_outs_first_pass # unbounded motor outputs during the mixer first pass (roll/pitch)
+float32[4] motor_outs_second_pass # unbounded motor outputs during the mixer second pass (yaw)

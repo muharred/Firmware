@@ -2261,6 +2261,11 @@ int sdlog2_thread_main(int argc, char *argv[])
 				log_msg.body.log_MLIM.flags = (buf.multirotor_motor_limits.lower_limit << 0)
 						| (buf.multirotor_motor_limits.upper_limit << 1)
 						| (buf.multirotor_motor_limits.yaw_limit << 2);
+
+				for (int i = 0; i < 4; ++i) {
+					log_msg.body.log_MLIM.first_pass_outs[i] = buf.multirotor_motor_limits.motor_outs_first_pass[i];
+					log_msg.body.log_MLIM.second_pass_outs[i] = buf.multirotor_motor_limits.motor_outs_second_pass[i];
+				}
 				LOGBUFFER_WRITE_AND_COUNT(MLIM);
 			}
 		}

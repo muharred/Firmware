@@ -260,6 +260,10 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t status_page[])
 		}
 
 		outputs[i] = out;
+
+		if (status_page != NULL && i < 4) {
+			status_page[PX4IO_P_STATUS_FP_OUT + i] = FLOAT_TO_REG(out);
+		}
 	}
 
 	float boost = 0.0f;				// value added to demanded thrust (can also be negative)
@@ -355,6 +359,10 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t status_page[])
 			if (status_page != NULL) {
 				status_page[PX4IO_P_STATUS_MIXER] |= PX4IO_P_STATUS_MIXER_YAW_LIMIT;
 			}
+		}
+
+		if (status_page != NULL && i < 4) {
+			status_page[PX4IO_P_STATUS_SP_OUT + i] = FLOAT_TO_REG(out);
 		}
 	}
 

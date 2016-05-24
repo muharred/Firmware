@@ -1982,6 +1982,23 @@ PX4IO::io_publish_pwm_outputs()
 		return ret;
 	}
 
+	for (int i = 0; i < 4; ++i) {
+		ret = io_reg_get(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FP_OUT + i, &mixer_tmp, 1);
+
+		if (ret != OK) {
+			return ret;
+		}
+
+		motor_limits.motor_outs_first_pass[i] = REG_TO_FLOAT(mixer_tmp);
+		ret = io_reg_get(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_SP_OUT + i, &mixer_tmp, 1);
+
+		if (ret != OK) {
+			return ret;
+		}
+
+		motor_limits.motor_outs_second_pass[i] = REG_TO_FLOAT(mixer_tmp);
+	}
+
 
 	/* publish mixer status */
 	if (_to_mixer_status == nullptr) {

@@ -142,6 +142,10 @@
 #define PX4IO_P_STATUS_ROLL_PITCH_SCALE	11
 #define PX4IO_P_STATUS_YAW_REDUCTION	12
 #define PX4IO_P_STATUS_THRUST_REDUCTION	13
+#define PX4IO_P_STATUS_FP_OUT 14
+// 15, 16, 17 are reserved for FP_OUT
+#define PX4IO_P_STATUS_SP_OUT 18
+// 19, 20, 21 are reserved for SP_OUT
 
 /* array of post-mix actuator outputs, -10000..10000 */
 #define PX4IO_PAGE_ACTUATORS		2		/* 0..CONFIG_ACTUATOR_COUNT-1 */
